@@ -1,0 +1,139 @@
+#!/usr/bin/env python3
+#weather-get (beta)
+#Released under GNU General Public License
+#Copyright 2014-2015, Aswin Babu K
+
+#import some serious stuff
+import urllib.request
+import json
+import os
+import linecache
+import sys
+
+#displays the help message
+def help_message():
+    print ('weather-get, a weather retriever for *NIX')
+    print ('Usage: weather-get [OPTION]')
+    
+    print ('Options:')
+    print ('-h    displays this message')
+    print ('-e    edit weather-get settings')
+    print ('-u    update weather information')
+
+
+#retrieve weather info from json
+def process_json (json_parsed):
+    weather_info = ''
+    
+    location = json_parsed ['location']['city']
+    weather_info += 'Location          : ' + str (location) + '\n'
+    
+    temperature = json_parsed ['current_observation']['temp_c']
+    weather_info += 'Temperature       : ' + str (temperature) + '°C\n'
+    
+    feels_like = json_parsed ['current_observation']['feelslike_c']
+    weather_info += 'Feels like        : ' + str (feels_like) + '°C\n'
+    
+    '''
+    humidity = json_parsed ['current_observation']['relative_humidity']
+    weather_info += 'Humidity: ' + str (weather_info) + '\n'
+    '''
+    
+    current_condition = json_parsed ['current_observation']['weather']
+    weather_info += 'Current condition : ' + str (current_condition) + '\n'
+    
+    wind_direction = json_parsed ['current_observation']['wind_dir']
+    wind_speed = json_parsed ['current_observation']['wind_kph']
+    weather_info += 'Wind              : ' + str (wind_direction) + ' at ' + str (wind_speed) + 'Kph\n'
+    
+    visibility = json_parsed['current_observation']['visibility_km']
+    weather_info += 'Visibility        : ' + str (visibility) + ' KM\n'
+    
+    last_update = json_parsed['current_observation']['observation_time']
+    weather_info += 'Last Updated on   : ' + str (last_update) + '\n'
+    
+    forecast = json_parsed['forecast']['simpleforecast']['forecastday'][1]['conditions']
+    weather_info += 'Forecast          : ' + str (forecast)
+    
+    return weather_info
+
+#download weather_info from wunderground
+def get_json (weather_directory):
+    try:
+        config_file = open (weather_directory + '/config')
+        location = {}
+        
+        for line in config_file:
+            line = line.rstrip()
+            location.update ({ line[:line.index('=')] : line[line.index('=')+1:] })
+            
+        config_file.close()
+        
+        weather_url = 'http://api.wunderground.com/api/c4ee334a3234caff/geolookup/conditions/forecast/q/' + location ['country'] + '/' + location ['city'] + '.json'
+        
+        weather_api = urllib.request.urlopen (weather_url)
+        
+        json_unparsed = weather_api.read()
+        weather_api.close()
+        json_parsed = json.loads (json_unparsed.decode ('utf8'))
+        
+        return json_parsed
+        
+    except:
+        print ('faied to retrieve data!')
+
+#check for files
+def check_files (weather_directory):
+    if not os.path.isdir (weather_directory):
+        os.mkdir (weather_directory)
+    
+    if not os.path.isfile (weather_directory + '/config'):
+        config_file = open (weather_directory + '/config', 'w')
+        config_file.write ('country=\n')
+        config_file.write ('city=')
+        config_file.close()
+
+#write to weather_file
+def write_weather_info (weather_directory, weather_info):
+    weather_file = open (weather_directory + '/weather', 'w')
+    weather_file.write (weather_info)
+    weather_file.close()
+    
+#read from weather_file
+def read_weather_info (weather_directory):
+    try:
+        weather_file = open (weather_directory + '/weather')        
+        
+        for line in weather_file:
+            print (line.rstrip())
+        
+        weather_file.close()
+    
+    except:
+        print ('update weather using -u switch first!')
+
+#the main function
+def main():
+    weather_directory = '/home/' + os.getlogin() + '/.weather'
+    check_files (weather_directory)
+    
+    try:
+        runtime_argument = sys.argv[1]
+        if runtime_argument == '-u':
+            json_parsed = get_json (weather_directory)
+            weather_info = process_json (json_parsed)
+            write_weather_info (weather_directory, weather_info)
+        
+        elif runtime_argument == '-e':
+            os.system ('vi ' + weather_directory + '/config')
+        
+        elif runtime_argument == '-h':
+            help_message()
+            
+        else:
+            print ('invalid switch!')
+    
+    except:
+        read_weather_info (weather_directory)
+
+main()
