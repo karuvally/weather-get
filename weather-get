@@ -20,40 +20,43 @@ def help_message():
     print ('-e    edit weather-get settings')
     print ('-u    update weather information')
 
-
 #retrieve weather info from json
 def process_json (json_parsed):
     weather_info = ''
     
+    station_name = json_parsed ['current_observation']['observation_location']['full']
+    weather_info += 'Station name          : ' + str (station_name) + '\n'
+    
+    station_id = json_parsed ['current_observation']['station_id']
+    weather_info += 'Station ID            : ' + str (station_id) + '\n'
+    
     location = json_parsed ['location']['city']
-    weather_info += 'Location          : ' + str (location) + '\n'
+    weather_info += 'Location              : ' + str (location) + '\n'
     
     temperature = json_parsed ['current_observation']['temp_c']
-    weather_info += 'Temperature       : ' + str (temperature) + '°C\n'
+    weather_info += 'Temperature           : ' + str (temperature) + '°C\n'
     
     feels_like = json_parsed ['current_observation']['feelslike_c']
-    weather_info += 'Feels like        : ' + str (feels_like) + '°C\n'
-    
-    '''
-    humidity = json_parsed ['current_observation']['relative_humidity']
-    weather_info += 'Humidity: ' + str (weather_info) + '\n'
-    '''
+    weather_info += 'Feels like            : ' + str (feels_like) + '°C\n'
     
     current_condition = json_parsed ['current_observation']['weather']
-    weather_info += 'Current condition : ' + str (current_condition) + '\n'
+    weather_info += 'Current condition     : ' + str (current_condition) + '\n'
     
     wind_direction = json_parsed ['current_observation']['wind_dir']
     wind_speed = json_parsed ['current_observation']['wind_kph']
-    weather_info += 'Wind              : ' + str (wind_direction) + ' at ' + str (wind_speed) + 'Kph\n'
+    weather_info += 'Wind                  : From ' + str (wind_direction) + ' at ' + str (wind_speed) + ' KpH\n'
     
-    visibility = json_parsed['current_observation']['visibility_km']
-    weather_info += 'Visibility        : ' + str (visibility) + ' KM\n'
+    visibility = json_parsed ['current_observation']['visibility_km']
+    weather_info += 'Visibility            : ' + str (visibility) + ' KM\n'
     
-    last_update = json_parsed['current_observation']['observation_time']
-    weather_info += 'Last Updated on   : ' + str (last_update) + '\n'
+    last_update = json_parsed ['current_observation']['observation_time_rfc822']
+    weather_info += 'Last Updated on       : ' + str (last_update) + '\n'
     
-    forecast = json_parsed['forecast']['simpleforecast']['forecastday'][1]['conditions']
-    weather_info += 'Forecast          : ' + str (forecast)
+    forecast_today = json_parsed ['forecast']['simpleforecast']['forecastday'][1]['conditions']
+    weather_info += 'Forecast for today    : ' + str (forecast_today) + '\n'
+    
+    forecast_tomorrow = json_parsed ['forecast']['simpleforecast']['forecastday'][2]['conditions']
+    weather_info += 'Forecast for tomorrow : ' + str (forecast_tomorrow)
     
     return weather_info
 
