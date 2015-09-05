@@ -2,6 +2,8 @@
 #weather-get (beta)
 #Released under GNU General Public License
 #Copyright 2014-2015, Aswin Babu K
+#Special thanks to SleepyHarry for cleaning up the code
+#Thanks to novel_yet_trivial, 04h for suggestions
 
 #import some serious stuff
 import urllib.request
@@ -25,45 +27,46 @@ def process_json (json_parsed):
     weather_info = ''
     
     station_name = json_parsed ['current_observation']['observation_location']['full']
-    weather_info += 'Station name          : ' + str (station_name) + '\n'
     
     station_id = json_parsed ['current_observation']['station_id']
-    weather_info += 'Station ID            : ' + str (station_id) + '\n'
     
     location = json_parsed ['location']['city']
-    weather_info += 'Location              : ' + str (location) + '\n'
     
     temperature = json_parsed ['current_observation']['temp_c']
-    weather_info += 'Temperature           : ' + str (temperature) + '°C\n'
     
     feels_like = json_parsed ['current_observation']['feelslike_c']
-    weather_info += 'Feels like            : ' + str (feels_like) + '°C\n'
     
     current_condition = json_parsed ['current_observation']['weather']
-    weather_info += 'Current condition     : ' + str (current_condition) + '\n'
     
     wind_direction = json_parsed ['current_observation']['wind_dir']
     wind_speed = json_parsed ['current_observation']['wind_kph']
-    weather_info += 'Wind                  : From ' + str (wind_direction) + ' at ' + str (wind_speed) + ' KpH\n'
     
     visibility = json_parsed ['current_observation']['visibility_km']
-    weather_info += 'Visibility            : ' + str (visibility) + ' KM\n'
     
     last_update = json_parsed ['current_observation']['observation_time_rfc822']
-    weather_info += 'Last Updated on       : ' + str (last_update) + '\n'
     
     forecast_today = json_parsed ['forecast']['simpleforecast']['forecastday'][1]['conditions']
-    weather_info += 'Forecast for today    : ' + str (forecast_today) + '\n'
     
     forecast_tomorrow = json_parsed ['forecast']['simpleforecast']['forecastday'][2]['conditions']
-    weather_info += 'Forecast for tomorrow : ' + str (forecast_tomorrow)
-    
+
+    weather_info = ('Station name          : {station_name}\n'
+                    'Station ID            : {station_id}\n'
+                    'Location              : {location}\n'
+                    'Temperature           : {temperature}°C\n'
+                    'Feels like            : {feels_like}°C\n'
+                    'Current condition     : {current_condition}\n'
+                    'Wind                  : From {wind_direction} at {wind_speed} KpH\n'
+                    'Visibility            : {visibility} KM\n'
+                    'Last Updated on       : {last_update}\n'
+                    'Forecast for today    : {forecast_today}\n'
+                    'Forecast for tomorrow : {forecast_tomorrow}')
+
     return weather_info
 
 #download weather_info from wunderground
 def get_json (weather_directory):
     try:
-        config_file = open (weather_directory + '/config')
+        config_file = open (os.path.join (weather_directory, 'config'))
         location = {}
         
         for line in config_file:
@@ -87,37 +90,42 @@ def get_json (weather_directory):
 
 #check for files
 def check_files (weather_directory):
+    config_file_path = os.path.join (weather_directory, 'config')
+
     if not os.path.isdir (weather_directory):
         os.mkdir (weather_directory)
     
-    if not os.path.isfile (weather_directory + '/config'):
-        config_file = open (weather_directory + '/config', 'w')
+    if not os.path.isfile (config_file_path):
+        config_file = open (config_file_path, 'w')
         config_file.write ('country=\n')
         config_file.write ('city=')
         config_file.close()
 
 #write to weather_file
 def write_weather_info (weather_directory, weather_info):
-    weather_file = open (weather_directory + '/weather', 'w')
+    weather_file = open (os.path.join (weather_directory, 'weather'), 'w')
     weather_file.write (weather_info)
     weather_file.close()
-    
-#read from weather_file
+
+#display the weather
 def read_weather_info (weather_directory):
-    try:
-        weather_file = open (weather_directory + '/weather')        
-        
+    weather_file_path = os.path.join (weather_directory, 'weather')
+
+    if os.path.exists (weather_file_path):
+        weather_file = open (weather_file_path)
+
         for line in weather_file:
             print (line.rstrip())
-        
+
         weather_file.close()
-    
-    except:
+
+    else:
         print ('update weather using -u switch first!')
+        sys.exit()
 
 #the main function
 def main():
-    weather_directory = '/home/' + os.getlogin() + '/.weather'
+    weather_directory = os.path.expanduser ('~/.config/weather')
     check_files (weather_directory)
     
     try:

@@ -2,6 +2,8 @@
 weather-get, a weather retrieval program for *NIX<br>
 Copyright 2014-2015, Aswin Babu K
 Released under GNU General Public License
+Thanks to SleepyHarry for cleaning up the code
+Thanks to novel_yet_trivial and 04h for suggestions
 
 weather-get is a weather retireval program for Unices, but one that prints
 the result to the terminal. It uses WeatherUnderground API for retrieving
