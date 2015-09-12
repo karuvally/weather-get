@@ -59,7 +59,7 @@ def process_json (json_parsed):
                     'Visibility            : {visibility} KM\n'
                     'Last Updated on       : {last_update}\n'
                     'Forecast for today    : {forecast_today}\n'
-                    'Forecast for tomorrow : {forecast_tomorrow}')
+                    'Forecast for tomorrow : {forecast_tomorrow}').format (**locals())
 
     return weather_info
 
