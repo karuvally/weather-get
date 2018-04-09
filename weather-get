@@ -1,53 +1,52 @@
 #!/usr/bin/env python3
-#weather-get (beta)
-#Released under GNU General Public License
-#Copyright 2014-2015, Aswin Babu K
-#Special thanks to SleepyHarry for cleaning up the code
-#Thanks to novel_yet_trivial, 04h for suggestions
+# weather-get (beta)
+# Released under GNU General Public License
+# Copyright 2014-2018, Aswin Babu Karuvally
+# Special thanks to SleepyHarry for cleaning up the code
+# Thanks to novel_yet_trivial, 04h for suggestions
 
 #import some serious stuff
 import urllib.request
 import json
 import os
-import linecache
 import sys
 
 #displays the help message
 def help_message():
-    print ('weather-get, a weather retriever for *NIX')
-    print ('Usage: weather-get [OPTION]')
+    print('weather-get, a weather retriever for *NIX')
+    print('Usage: weather-get [OPTION]')
     
-    print ('Options:')
-    print ('-h    displays this message')
-    print ('-e    edit weather-get settings')
-    print ('-u    update weather information')
+    print('Options:')
+    print('-h    displays this message')
+    print('-e    edit weather-get settings')
+    print('-u    update weather information')
 
 #retrieve weather info from json
-def process_json (json_parsed):
+def process_json(json_parsed):
     weather_info = ''
     
-    station_name = json_parsed ['current_observation']['observation_location']['full']
+    station_name = (json_parsed['current_observation']['observation_location']['full'])
+
+    station_id = json_parsed['current_observation']['station_id']
     
-    station_id = json_parsed ['current_observation']['station_id']
+    location = json_parsed['location']['city']
     
-    location = json_parsed ['location']['city']
+    temperature = json_parsed['current_observation']['temp_c']
     
-    temperature = json_parsed ['current_observation']['temp_c']
+    feels_like = json_parsed['current_observation']['feelslike_c']
     
-    feels_like = json_parsed ['current_observation']['feelslike_c']
+    current_condition = json_parsed['current_observation']['weather']
     
-    current_condition = json_parsed ['current_observation']['weather']
+    wind_direction = json_parsed['current_observation']['wind_dir']
+    wind_speed = json_parsed['current_observation']['wind_kph']
     
-    wind_direction = json_parsed ['current_observation']['wind_dir']
-    wind_speed = json_parsed ['current_observation']['wind_kph']
+    visibility = json_parsed['current_observation']['visibility_km']
     
-    visibility = json_parsed ['current_observation']['visibility_km']
+    last_update = json_parsed['current_observation']['observation_time_rfc822']
     
-    last_update = json_parsed ['current_observation']['observation_time_rfc822']
+    forecast_today = json_parsed['forecast']['simpleforecast']['forecastday'][1]['conditions']
     
-    forecast_today = json_parsed ['forecast']['simpleforecast']['forecastday'][1]['conditions']
-    
-    forecast_tomorrow = json_parsed ['forecast']['simpleforecast']['forecastday'][2]['conditions']
+    forecast_tomorrow = json_parsed['forecast']['simpleforecast']['forecastday'][2]['conditions']
 
     weather_info = ('Station name          : {station_name}\n'
                     'Station ID            : {station_id}\n'
@@ -64,9 +63,9 @@ def process_json (json_parsed):
     return weather_info
 
 #download weather_info from wunderground
-def get_json (weather_directory):
+def get_json(weather_directory):
     try:
-        config_file = open (os.path.join (weather_directory, 'config'))
+        config_file = open(os.path.join (weather_directory, 'config'))
         location = {}
         
         for line in config_file:
@@ -86,54 +85,54 @@ def get_json (weather_directory):
         return json_parsed
         
     except:
-        print ('faied to retrieve data!')
+        print('faied to retrieve data!')
 
 #check for files
-def check_files (weather_directory):
+def check_files(weather_directory):
     config_file_path = os.path.join (weather_directory, 'config')
 
-    if not os.path.isdir (weather_directory):
-        os.mkdir (weather_directory)
+    if not os.path.isdir(weather_directory):
+        os.mkdir(weather_directory)
     
-    if not os.path.isfile (config_file_path):
-        config_file = open (config_file_path, 'w')
-        config_file.write ('country=\n')
-        config_file.write ('city=')
+    if not os.path.isfile(config_file_path):
+        config_file = open(config_file_path, 'w')
+        config_file.write('country=\n')
+        config_file.write('city=')
         config_file.close()
 
 #write to weather_file
-def write_weather_info (weather_directory, weather_info):
-    weather_file = open (os.path.join (weather_directory, 'weather'), 'w')
-    weather_file.write (weather_info)
+def write_weather_info(weather_directory, weather_info):
+    weather_file = open(os.path.join (weather_directory, 'weather'), 'w')
+    weather_file.write(weather_info)
     weather_file.close()
 
 #display the weather
-def read_weather_info (weather_directory):
+def read_weather_info(weather_directory):
     weather_file_path = os.path.join (weather_directory, 'weather')
 
-    if os.path.exists (weather_file_path):
-        weather_file = open (weather_file_path)
+    if os.path.exists(weather_file_path):
+        weather_file = open(weather_file_path)
 
         for line in weather_file:
-            print (line.rstrip())
+            print(line.rstrip())
 
         weather_file.close()
 
     else:
-        print ('update weather using -u switch first!')
+        print('update weather using -u switch first!')
         sys.exit()
 
 #the main function
 def main():
-    weather_directory = os.path.expanduser ('~/.config/weather')
-    check_files (weather_directory)
+    weather_directory = os.path.expanduser('~/.config/weather')
+    check_files(weather_directory)
     
     try:
         runtime_argument = sys.argv[1]
         if runtime_argument == '-u':
             json_parsed = get_json (weather_directory)
-            weather_info = process_json (json_parsed)
-            write_weather_info (weather_directory, weather_info)
+            weather_info = process_json(json_parsed)
+            write_weather_info(weather_directory, weather_info)
         
         elif runtime_argument == '-e':
             os.system ('vi ' + weather_directory + '/config')
@@ -142,9 +141,9 @@ def main():
             help_message()
             
         else:
-            print ('invalid switch!')
+            print('invalid switch!')
     
     except:
-        read_weather_info (weather_directory)
+        read_weather_info(weather_directory)
 
 main()
